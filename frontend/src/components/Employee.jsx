@@ -21,17 +21,25 @@ const Employee = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentEmployeeId, setCurrentEmployeeId] = useState(null);
 
-  // Obtener empleados desde el backend
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/employees'); // URL de tu backend
+  // Función para obtener empleados desde el backend
+  const fetchEmployees = async () => {
+    try {
+      console.log('Obteniendo lista de empleados...');
+      const response = await fetch('http://localhost:4000/api/employee'); // URL de tu backend
+      
+      if (response.ok) {
         const data = await response.json();
         setEmployees(data);
-      } catch (error) {
-        console.error('Error fetching employees:', error);
+      } else {
+        console.error('Error fetching employees - backend response:', response.status, response.statusText);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching employees - network/fetch error:', error);
+    }
+  };
+
+  // Cargar empleados al montar el componente
+  useEffect(() => {
     fetchEmployees();
   }, []);
 
@@ -48,13 +56,14 @@ const Employee = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/employees', {
+      const response = await fetch('http://localhost:4000/api/employee', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
+      
       if (response.ok) {
         setFormData({
           name: '',
@@ -71,9 +80,14 @@ const Employee = () => {
         });
         fetchEmployees(); // Recarga los empleados
         navigate('/employees');
+      } else {
+        const errorData = await response.json();
+        console.error('Error creating employee - backend response:', errorData);
+        alert(`Error al crear empleado: ${errorData.error || response.statusText}`);
       }
     } catch (error) {
-      console.error('Error creating employee:', error);
+      console.error('Error creating employee - network/fetch error:', error);
+      alert(`Error al crear empleado: ${error.message}`);
     }
   };
 
@@ -81,13 +95,22 @@ const Employee = () => {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/employees/${currentEmployeeId}`, {
+      // Asegurarse de que currentEmployeeId es válido y está en el formato correcto
+      if (!currentEmployeeId) {
+        alert('ID de empleado no válido');
+        return;
+      }
+      
+      console.log(`Editando empleado con ID: ${currentEmployeeId}`);
+      
+      const response = await fetch(`http://localhost:4000/api/employee/${currentEmployeeId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
+      
       if (response.ok) {
         fetchEmployees(); // Recarga los empleados
         setIsEditing(false);
@@ -105,21 +128,42 @@ const Employee = () => {
           issnumber: '',
         });
         navigate('/employees');
+      } else {
+        const errorData = await response.json();
+        console.error('Error updating employee - backend response:', errorData);
+        alert(`Error al actualizar empleado: ${errorData.error || response.statusText}`);
       }
     } catch (error) {
-      console.error('Error updating employee:', error);
+      console.error('Error updating employee - network/fetch error:', error);
+      alert(`Error al actualizar empleado: ${error.message}`);
     }
   };
 
   // Eliminar un empleado
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/employees/${id}`, {
+      // Asegurarse de que id es válido y está en el formato correcto
+      if (!id) {
+        alert('ID de empleado no válido');
+        return;
+      }
+      
+      console.log(`Eliminando empleado con ID: ${id}`);
+      
+      const response = await fetch(`http://localhost:4000/api/employee/${id}`, {
         method: 'DELETE',
       });
-      setEmployees(employees.filter((employee) => employee._id !== id)); // Actualiza la lista de empleados
+      
+      if (response.ok) {
+        setEmployees(employees.filter((employee) => employee._id !== id)); // Actualiza la lista de empleados
+      } else {
+        const errorData = await response.json();
+        console.error('Error deleting employee - backend response:', errorData);
+        alert(`Error al eliminar empleado: ${errorData.error || response.statusText}`);
+      }
     } catch (error) {
-      console.error('Error deleting employee:', error);
+      console.error('Error deleting employee - network/fetch error:', error);
+      alert(`Error al eliminar empleado: ${error.message}`);
     }
   };
 

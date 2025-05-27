@@ -1,17 +1,16 @@
 import express from "express";
 import productsController from "../controllers/productsController.js";
-// Router() nos ayuda a colocar los metodos
-// que tendra mi ruta
+
 const router = express.Router();
 
 router
   .route("/")
-  .get(productsController.getProducts)
-  .post(productsController.createProducts);
+  .get(productsController.getAllProducts)   
+  .post(productsController.createProduct); 
 
 router
   .route("/:id")
-  .put(productsController.updateProducts)
-  .delete(productsController.deleteProducts);
+  .put(productsController.updateProduct)   
+  .delete(productsController.deleteProduct); 
 
 export default router;

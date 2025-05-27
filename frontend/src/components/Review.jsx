@@ -17,7 +17,7 @@ const Review = () => {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/comments'); // URL del backend
+        const response = await fetch('http://localhost:4000/api/reviews'); // URL del backend
         const data = await response.json();
         setComments(data);
       } catch (error) {
@@ -40,7 +40,7 @@ const Review = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/comments', {
+      const response = await fetch('http://localhost:4000/api/reviews', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const Review = () => {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/comments/${currentCommentId}`, {
+      const response = await fetch(`http://localhost:4000/api/reviews/${currentCommentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ const Review = () => {
   // Eliminar un comentario
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/comments/${id}`, {
+      await fetch(`http://localhost:4000/api/reviews/${id}`, {
         method: 'DELETE',
       });
       setComments(comments.filter((comment) => comment._id !== id)); // Actualiza la lista de comentarios

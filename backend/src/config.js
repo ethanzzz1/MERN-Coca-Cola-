@@ -1,12 +1,11 @@
 import dotenv from "dotenv";
 
-// Ejecutamos la libreria
-// para acceder al .env
+// Cargar variables de entorno
 dotenv.config();
 
 export const config = {
   db: {
-    URI: process.env.DB_URI,
+    URI: process.env.MONGODB_URI, // 👈 corregido aquí
   },
   server: {
     port: process.env.PORT,

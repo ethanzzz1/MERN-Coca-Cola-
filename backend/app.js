@@ -1,32 +1,36 @@
-// Importo todo lo de la libreria de Express
-import express from "express";
-import productsRoutes from "./src/routes/products.js";
-import customersRoutes from "./src/routes/customers.js";
-import employeeRoutes from "./src/routes/employees.js";
-import branchesRoutes from "./src/routes/branches.js";
-import reviewsRoutes from "./src/routes/reviews.js";
-import registerEmployeesRoutes from "./src/routes/registerEmployees.js";
-import loginRoutes from "./src/routes/login.js";
-import cookieParser from "cookie-parser";
-import logoutRoutes from "./src/routes/logout.js";
-import registerClients from "./src/routes/registerClients.js";
-import passwordRecoveryRoutes from "./src/routes/passwordRecovery.js";
-import blogRoutes from "./src/routes/blog.js";
+const express = require('express');
+const dotenv = require('dotenv');
+const connectDB = require('./src/database');
+const productsRoutes = require("./src/routes/products");
+const customersRoutes = require("./src/routes/customers");
+const employeeRoutes = require("./src/routes/employees");
+const branchesRoutes = require("./src/routes/branches");
+const reviewsRoutes = require("./src/routes/reviews");
+const registerEmployeesRoutes = require("./src/routes/registerEmployees");
+const loginRoutes = require("./src/routes/login");
+const cookieParser = require("cookie-parser");
+const logoutRoutes = require("./src/routes/logout");
+const registerClients = require("./src/routes/registerClients");
+const passwordRecoveryRoutes = require("./src/routes/passwordRecovery");
+const blogRoutes = require("./src/routes/blog");
 
-// Creo una constante que es igual a la libreria que importé
+// Configurar variables de entorno
+dotenv.config();
+
+// Crear la aplicación Express
 const app = express();
 
-// Que acepte datos en json
+// Configurar middleware
 app.use(express.json());
-// Que acepte cookies
 app.use(cookieParser());
 
-// Definir las rutas de las funciones que tendrá la página web
+// Definir rutas
 app.use("/api/products", productsRoutes);
 app.use("/api/customers", customersRoutes);
 app.use("/api/employee", employeeRoutes);
 app.use("/api/branches", branchesRoutes);
 app.use("/api/reviews", reviewsRoutes);
+app.use("/api/blog", blogRoutes);
 
 app.use("/api/registerEmployees", registerEmployeesRoutes);
 app.use("/api/login", loginRoutes);
@@ -35,7 +39,22 @@ app.use("/api/logout", logoutRoutes);
 app.use("/api/registerClients", registerClients);
 app.use("/api/passwordRecovery", passwordRecoveryRoutes);
 
-app.use("/api/blog", blogRoutes);
+// Conectar a la base de datos
+const startServer = async () => {
+  try {
+    await connectDB();
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () => {
+      console.log(`Servidor corriendo en el puerto ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Error al iniciar el servidor:', error);
+    process.exit(1);
+  }
+};
 
-// Exporto la constante para poder usar express en otros archivos
-export default app;
+// Iniciar el servidor
+startServer();
+
+// Exportar la aplicación para otros archivos
+module.exports = app;

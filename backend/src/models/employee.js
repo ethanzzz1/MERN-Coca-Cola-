@@ -12,55 +12,109 @@ const employeeSchema = new Schema(
   {
     name: {
       type: String,
-      require: true,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 50
     },
 
     lastName: {
       type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 50
     },
 
     birthday: {
       type: Date,
-      require: true,
+      required: true
     },
 
     email: {
       type: String,
+      required: true,
+      trim: true,
+      unique: true,
+      lowercase: true,
+      match: /^\S+@\S+\.\S+$/
     },
 
     address: {
       type: String,
-    },
-
-    password: {
-      type: String,
-      require: true,
-    },
-    hireDate: {
-      type: String,
+      trim: true,
+      maxlength: 200
     },
 
     telephone: {
       type: String,
-      require: true,
+      required: true,
+      trim: true,
+      match: /^[0-9]{8}$/
     },
 
     dui: {
       type: String,
-      require: true,
+      required: true,
+      trim: true,
+      unique: true,
+      match: /^[0-9]{8}-[0-9]$/
     },
-    isVerified: {
-      type: Boolean,
-    },
-    issnumber: {
+
+    issNumber: {
       type: String,
-      require: true,
+      required: true,
+      trim: true,
+      unique: true
     },
+
+    hireDate: {
+      type: Date,
+      required: true
+    },
+
+    position: {
+      type: String,
+      required: true,
+      enum: ['manager', 'supervisor', 'employee', 'assistant']
+    },
+
+    salary: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'on leave'],
+      default: 'active'
+    },
+
+    department: {
+      type: Schema.Types.ObjectId,
+      ref: 'Department',
+      required: true
+    },
+
+    supervisor: {
+      type: Schema.Types.ObjectId,
+      ref: 'Employee'
+    }
   },
   {
     timestamps: true,
-    strict: false,
+    strict: false
   }
 );
 
-export default model("employee", employeeSchema);
+// Index para búsqueda rápida por nombre y apellido
+employeeSchema.index({ name: 1, lastName: 1 });
+
+// Validación personalizada para la edad mínima
+employeeSchema.path('birthday').validate(function(birthday) {
+  const age = new Date().getFullYear() - new Date(birthday).getFullYear();
+  return age >= 18;
+}, 'La edad mínima es 18 años');
+
+export default model("Employee", employeeSchema);

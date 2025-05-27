@@ -1,63 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Blog= () => {
+const Blog = () => {
   const navigate = useNavigate();
   
   const [blogs, setBlogs] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    image: '',
+    image: null,
+    author: '',
+    category: 'news',
+    status: 'draft',
   });
   const [isEditing, setIsEditing] = useState(false);
   const [currentBlogId, setCurrentBlogId] = useState(null);
 
-  // Obtener blogs desde el backend
+  // Función para obtener blogs desde el backend
+  const fetchBlogs = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/blogs');
+      const data = await response.json();
+      setBlogs(data);
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
+    }
+  };
+
+  // Cargar blogs al montar el componente
   useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/blogs');
-        const data = await response.json();
-        setBlogs(data);
-      } catch (error) {
-        console.error('Error fetching blogs:', error);
-      }
-    };
-    fetchBlogs();
-  }, []);
+    fetchBlogs(); // Call the component-level one
+  }, []); // El array vacío asegura que se ejecute solo al montar
 
   // Maneja el cambio de los campos del formulario
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setFormData({
+        ...formData,
+        [name]: files[0],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   // Crear un nuevo blog
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/blogs', {
+      const dataToSend = new FormData();
+      dataToSend.append('title', formData.title);
+      dataToSend.append('content', formData.content);
+      if (formData.image) {
+        dataToSend.append('image', formData.image);
+      }
+      dataToSend.append('author', formData.author);
+      dataToSend.append('category', formData.category);
+      dataToSend.append('status', formData.status);
+
+      const response = await fetch('http://localhost:4000/api/blogs', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: dataToSend,
       });
       if (response.ok) {
         setFormData({
           title: '',
           content: '',
-          image: '',
+          image: null,
+          author: '',
+          category: 'news',
+          status: 'draft',
         });
         fetchBlogs(); // Recarga los blogs
         navigate('/blogs');
+      } else {
+        const errorData = await response.json();
+        console.error('Error creating blog - backend response:', errorData);
+        alert(`Error creating blog: ${errorData.error || response.statusText}`);
       }
     } catch (error) {
-      console.error('Error creating blog:', error);
+      console.error('Error creating blog - network/fetch error:', error);
+      alert(`Error creating blog: ${error.message}`);
     }
   };
 
@@ -65,12 +92,19 @@ const Blog= () => {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/blogs/${currentBlogId}`, {
+      const dataToSend = new FormData();
+      dataToSend.append('title', formData.title);
+      dataToSend.append('content', formData.content);
+      if (formData.image && typeof formData.image !== 'string') {
+        dataToSend.append('image', formData.image);
+      }
+      dataToSend.append('author', formData.author);
+      dataToSend.append('category', formData.category);
+      dataToSend.append('status', formData.status);
+
+      const response = await fetch(`http://localhost:4000/api/blogs/${currentBlogId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: dataToSend,
       });
       if (response.ok) {
         fetchBlogs(); // Recarga los blogs
@@ -78,19 +112,27 @@ const Blog= () => {
         setFormData({
           title: '',
           content: '',
-          image: '',
+          image: null,
+          author: '',
+          category: 'news',
+          status: 'draft',
         });
         navigate('/blogs');
+      } else {
+        const errorData = await response.json();
+        console.error('Error updating blog - backend response:', errorData);
+        alert(`Error updating blog: ${errorData.error || response.statusText}`);
       }
     } catch (error) {
-      console.error('Error updating blog:', error);
+      console.error('Error updating blog - network/fetch error:', error);
+      alert(`Error updating blog: ${error.message}`);
     }
   };
 
   // Eliminar un blog
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/blogs/${id}`, {
+      await fetch(`http://localhost:4000/api/blogs/${id}`, {
         method: 'DELETE',
       });
       setBlogs(blogs.filter((blog) => blog._id !== id)); // Actualiza la lista de blogs
@@ -106,7 +148,10 @@ const Blog= () => {
     setFormData({
       title: blog.title,
       content: blog.content,
-      image: blog.image,
+      image: '', // No prellenar con la URL, solo si el usuario sube una nueva imagen
+      author: blog.author || '',
+      category: blog.category || 'news',
+      status: blog.status || 'draft',
     });
   };
 
@@ -141,15 +186,53 @@ const Blog= () => {
           ></textarea>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Imagen (URL)</label>
+          <label className="block text-sm font-medium text-gray-700">Imagen</label>
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            onChange={handleChange}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Autor</label>
           <input
             type="text"
-            name="image"
-            value={formData.image}
+            name="author"
+            value={formData.author}
             onChange={handleChange}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             required
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Categoría</label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            required
+          >
+            <option value="news">Noticias</option>
+            <option value="products">Productos</option>
+            <option value="company">Compañía</option>
+            <option value="events">Eventos</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Estado</label>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            required
+          >
+            <option value="draft">Borrador</option>
+            <option value="published">Publicado</option>
+          </select>
         </div>
         <div>
           <button

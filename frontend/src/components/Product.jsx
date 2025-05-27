@@ -6,10 +6,15 @@ const Product = () => {
   
   const [products, setProducts] = useState([]);
   const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    precio: '',
+    name: '',
+    description: '',
+    price: '',
     stock: '',
+    category: '',
+    brand: 'Coca-Cola',
+    packaging: 'bottle',
+    volume: '',
+    unit: 'ml',
   });
   const [isEditing, setIsEditing] = useState(false);
   const [currentProductId, setCurrentProductId] = useState(null);
@@ -18,7 +23,7 @@ const Product = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/products'); // URL de tu backend
+        const response = await fetch('http://localhost:4000/api/products'); // URL de tu backend
         const data = await response.json();
         setProducts(data);
       } catch (error) {
@@ -41,7 +46,7 @@ const Product = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/products', {
+      const response = await fetch('http://localhost:4000/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +72,7 @@ const Product = () => {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${currentProductId}`, {
+      const response = await fetch(`http://localhost:4000/api/products/${currentProductId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +98,7 @@ const Product = () => {
   // Eliminar un producto
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/products/${id}`, {
+      await fetch(`http://localhost:4000/api/products/${id}`, {
         method: 'DELETE',
       });
       setProducts(products.filter((product) => product._id !== id)); // Actualiza la lista de productos
@@ -107,10 +112,15 @@ const Product = () => {
     setIsEditing(true);
     setCurrentProductId(product._id);
     setFormData({
-      nombre: product.nombre,
-      descripcion: product.descripcion,
-      precio: product.precio,
+      name: product.name,
+      description: product.description,
+      price: product.price,
       stock: product.stock,
+      category: product.category,
+      brand: product.brand,
+      packaging: product.packaging,
+      volume: product.volume,
+      unit: product.unit,
     });
   };
 
@@ -126,8 +136,8 @@ const Product = () => {
           <label className="block text-sm font-medium text-gray-700">Nombre</label>
           <input
             type="text"
-            name="nombre"
-            value={formData.nombre}
+            name="name"
+            value={formData.name}
             onChange={handleChange}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             required
@@ -136,8 +146,8 @@ const Product = () => {
         <div>
           <label className="block text-sm font-medium text-gray-700">Descripción</label>
           <textarea
-            name="descripcion"
-            value={formData.descripcion}
+            name="description"
+            value={formData.description}
             onChange={handleChange}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             rows="4"
@@ -148,8 +158,8 @@ const Product = () => {
           <label className="block text-sm font-medium text-gray-700">Precio</label>
           <input
             type="number"
-            name="precio"
-            value={formData.precio}
+            name="price"
+            value={formData.price}
             onChange={handleChange}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             required
@@ -165,6 +175,74 @@ const Product = () => {
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             required
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Categoría (ID)</label>
+          <input
+            type="text"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Marca</label>
+          <select
+            name="brand"
+            value={formData.brand}
+            onChange={handleChange}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            required
+          >
+            <option value="Coca-Cola">Coca-Cola</option>
+            <option value="Sprite">Sprite</option>
+            <option value="Fanta">Fanta</option>
+            <option value="Powerade">Powerade</option>
+            <option value="Dasani">Dasani</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Empaque</label>
+          <select
+            name="packaging"
+            value={formData.packaging}
+            onChange={handleChange}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            required
+          >
+            <option value="bottle">Botella</option>
+            <option value="can">Lata</option>
+            <option value="box">Caja</option>
+            <option value="bag">Bolsa</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Volumen</label>
+          <input
+            type="number"
+            name="volume"
+            value={formData.volume}
+            onChange={handleChange}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Unidad</label>
+          <select
+            name="unit"
+            value={formData.unit}
+            onChange={handleChange}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            required
+          >
+            <option value="ml">ml</option>
+            <option value="l">l</option>
+            <option value="oz">oz</option>
+          </select>
         </div>
         <div>
           <button
@@ -183,10 +261,10 @@ const Product = () => {
             key={product._id}
             className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300"
           >
-            <h2 className="text-xl font-semibold text-gray-900">{product.nombre}</h2>
-            <p className="text-gray-600 mt-2">{product.descripcion}</p>
+            <h2 className="text-xl font-semibold text-gray-900">{product.name}</h2>
+            <p className="text-gray-600 mt-2">{product.description}</p>
             <div className="mt-4 flex justify-between items-center">
-              <span className="text-indigo-600 font-semibold">Precio: ${product.precio}</span>
+              <span className="text-indigo-600 font-semibold">Precio: ${product.price}</span>
               <span className="text-green-600 font-semibold">Stock: {product.stock}</span>
             </div>
             <div className="mt-4 flex justify-between">

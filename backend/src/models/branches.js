@@ -1,9 +1,12 @@
 /*
     Campos:
-        nombre
-        descripcion
-        precio
-        stock
+        name
+        lastName
+        birthday
+        email
+        password
+        telephone
+        dui
 */
 
 import { Schema, model } from "mongoose";
@@ -12,32 +15,38 @@ const branchesSchema = new Schema(
   {
     name: {
       type: String,
-      require: true,
+      required: true,
     },
 
-    address: {
+    lastName: {
       type: String,
+      required: true,
     },
 
     birthday: {
       type: Date,
-      require: true,
-      min: 0,
+      required: true,
     },
 
-    schedule: {
-        type: String,
-        require: true,
-      },
+    email: {
+      type: String,
+      required: true,
+    },
 
+    password: {
+      type: String,
+      required: true,
+    },
 
     telephone: {
-        type: Number,
-        require: true,
-        min: 8,
-      },
+      type: String,
+      required: true,
+    },
 
-     
+    dui: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

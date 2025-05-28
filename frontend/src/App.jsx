@@ -3,9 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 import NavBar from './components/NavBar'
 import Review from './components/Review'
-import Blog from './components/Blog' // Asegúrate de tener el componente Blog
-import Product from './components/Product' // Asegúrate de tener el componente Producto
-import Employee from './components/Employee' // Asegúrate de tener el componente Empleado
+import Blog from './components/Blog' 
+import Employee from './components/Employee'
 import './App.css'
 
 function App() {
@@ -18,8 +17,9 @@ function App() {
         <Route path="/" element={<Blog />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/review" element={<Review />} />
-        <Route path="/producto" element={<Product />} />
+        <Route path="/comments" element={<Review />} /> {/* Ruta adicional para redirecciones del Review */}
         <Route path="/empleado" element={<Employee />} />
+        <Route path="/employees" element={<Employee />} /> {/* Ruta adicional para redirecciones del Employee */}
       </Routes>
     </Router>
   )

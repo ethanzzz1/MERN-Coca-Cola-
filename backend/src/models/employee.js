@@ -1,9 +1,5 @@
 /*
-    Campos:
-        nombre
-        descripcion
-        precio
-        stock
+    Modelo simplificado de Employee para coincidir con el frontend
 */
 
 import { Schema, model } from "mongoose";
@@ -13,76 +9,72 @@ const employeeSchema = new Schema(
     name: {
       type: String,
       required: true,
-      trim: true,
-      minlength: 2,
-      maxlength: 50
+      trim: true
     },
 
     lastName: {
       type: String,
       required: true,
-      trim: true,
-      minlength: 2,
-      maxlength: 50
+      trim: true
     },
 
     birthday: {
       type: Date,
-      required: true
+      required: false
     },
 
     email: {
       type: String,
       required: true,
-      trim: true,
-      unique: true,
-      lowercase: true,
-      match: /^\S+@\S+\.\S+$/
+      trim: true
     },
 
     address: {
       type: String,
-      trim: true,
-      maxlength: 200
+      required: false,
+      trim: true
+    },
+
+    password: {
+      type: String,
+      required: true
     },
 
     telephone: {
       type: String,
       required: true,
-      trim: true,
-      match: /^[0-9]{8}$/
+      trim: true
     },
 
     dui: {
       type: String,
       required: true,
-      trim: true,
-      unique: true,
-      match: /^[0-9]{8}-[0-9]$/
+      trim: true
     },
 
+    // Campo alineado con el frontend (issnumber -> issNumber)
     issNumber: {
       type: String,
       required: true,
-      trim: true,
-      unique: true
+      trim: true
     },
 
     hireDate: {
       type: Date,
-      required: true
+      required: false
     },
 
+    // Campos opcionales con valores predeterminados
     position: {
       type: String,
-      required: true,
-      enum: ['manager', 'supervisor', 'employee', 'assistant']
+      required: false,
+      default: 'employee'
     },
 
     salary: {
       type: Number,
-      required: true,
-      min: 0
+      required: false,
+      default: 0
     },
 
     status: {
@@ -91,15 +83,22 @@ const employeeSchema = new Schema(
       default: 'active'
     },
 
+    // Ya no es requerido
     department: {
       type: Schema.Types.ObjectId,
       ref: 'Department',
-      required: true
+      required: false
     },
 
     supervisor: {
       type: Schema.Types.ObjectId,
-      ref: 'Employee'
+      ref: 'Employee',
+      required: false
+    },
+    
+    isVerified: {
+      type: Boolean,
+      default: false
     }
   },
   {

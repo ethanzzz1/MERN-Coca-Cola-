@@ -1,7 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./src/database');
-const productsRoutes = require("./src/routes/products");
 const customersRoutes = require("./src/routes/customers");
 const employeeRoutes = require("./src/routes/employees");
 const branchesRoutes = require("./src/routes/branches");
@@ -25,7 +24,6 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Definir rutas
-app.use("/api/products", productsRoutes);
 app.use("/api/customers", customersRoutes);
 app.use("/api/employee", employeeRoutes);
 app.use("/api/branches", branchesRoutes);

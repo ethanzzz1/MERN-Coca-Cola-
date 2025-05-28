@@ -3,7 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './src/database.js';
-import productsRoutes from "./src/routes/products.js";
+// Se eliminó la importación de productsRoutes
 import customersRoutes from "./src/routes/customers.js";
 import employeeRoutes from "./src/routes/employees.js";
 import branchesRoutes from "./src/routes/branches.js";
@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Definir rutas
-app.use("/api/products", productsRoutes);
+// Se eliminó la ruta de productos
 app.use("/api/customers", customersRoutes);
 app.use("/api/employee", employeeRoutes);
 app.use("/api/branches", branchesRoutes);

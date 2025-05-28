@@ -1,4 +1,5 @@
 import reviewsModel from "../models/Reviews.js";
+import mongoose from "mongoose";
 
 const reviewsController = {};
 
@@ -6,37 +7,32 @@ const reviewsController = {};
 reviewsController.getAllReviews = async (req, res) => {
   try {
     const reviews = await reviewsModel.find()
-      .populate('customerId')
-      .populate('productId')
       .sort({ createdAt: -1 });
     res.json(reviews);
   } catch (error) {
+    console.error('Error getting all reviews:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
-// Obtener reseñas por producto
+// Obtener reseñas por producto - Ya no es necesaria esta función pero la mantenemos por compatibilidad
 reviewsController.getReviewsByProduct = async (req, res) => {
   try {
-    const reviews = await reviewsModel.find({ productId: req.params.productId })
-      .populate('customerId')
-      .populate('productId')
-      .sort({ createdAt: -1 });
-    res.json(reviews);
+    // Como ya no tenemos productos, esta función retornará un array vacío
+    res.json([]);
   } catch (error) {
+    console.error('Error getting reviews by product:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
-// Obtener reseñas por cliente
+// Obtener reseñas por cliente - Ya no es necesaria esta función pero la mantenemos por compatibilidad
 reviewsController.getReviewsByCustomer = async (req, res) => {
   try {
-    const reviews = await reviewsModel.find({ customerId: req.params.customerId })
-      .populate('customerId')
-      .populate('productId')
-      .sort({ createdAt: -1 });
-    res.json(reviews);
+    // Como ya no tenemos customerId, esta función retornará un array vacío
+    res.json([]);
   } catch (error) {
+    console.error('Error getting reviews by customer:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -47,21 +43,21 @@ reviewsController.createReview = async (req, res) => {
     const {
       comment,
       rating,
-      customerId,
       productId,
       title,
-      images,
-      purchaseDate
+      images
     } = req.body;
 
     const newReview = new reviewsModel({
       comment,
       rating,
-      customerId,
-      productId,
-      title,
-      images,
-      purchaseDate
+      productId: productId || null, // Make productId optional
+      title: title || 'Reseña', // Provide default title if not provided
+      images: images || [],
+      status: 'approved', // Default to approved
+      helpfulVotes: 0,
+      verifiedPurchase: false,
+      purchaseDate: new Date() // Default to current date
     });
 
     const savedReview = await newReview.save();
@@ -128,12 +124,11 @@ reviewsController.searchReviews = async (req, res) => {
         { title: { $regex: query, $options: 'i' } },
         { comment: { $regex: query, $options: 'i' } }
       ]
-    })
-    .populate('customerId')
-    .populate('productId');
+    });
     
     res.json(reviews);
   } catch (error) {
+    console.error('Error searching reviews:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -141,6 +136,11 @@ reviewsController.searchReviews = async (req, res) => {
 // Obtener estadísticas de reseñas por producto
 reviewsController.getProductReviewsStats = async (req, res) => {
   try {
+    // Validar que el ID del producto es válido
+    if (!mongoose.Types.ObjectId.isValid(req.params.productId)) {
+      return res.status(400).json({ error: 'ID de producto inválido' });
+    }
+
     const stats = await reviewsModel.aggregate([
       {
         $match: {
@@ -152,33 +152,39 @@ reviewsController.getProductReviewsStats = async (req, res) => {
         $group: {
           _id: null,
           averageRating: { $avg: '$rating' },
-          totalReviews: { $sum: 1 },
-          ratingDistribution: {
-            $arrayToObject: {
-              $map: {
-                input: [1, 2, 3, 4, 5],
-                as: 'rating',
-                in: {
-                  k: { $toString: '$$rating' },
-                  v: {
-                    $size: {
-                      $filter: {
-                        input: '$$ROOT.rating',
-                        as: 'r',
-                        cond: { $eq: ['$$r', '$$rating'] }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          totalReviews: { $sum: 1 }
         }
       }
     ]);
 
-    res.json(stats[0] || {});
+    // Contar el número de reseñas por cada calificación
+    const ratingCounts = await reviewsModel.aggregate([
+      {
+        $match: {
+          productId: new mongoose.Types.ObjectId(req.params.productId),
+          status: 'approved'
+        }
+      },
+      {
+        $group: {
+          _id: '$rating',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Formatear la respuesta
+    const result = stats[0] || { averageRating: 0, totalReviews: 0 };
+    
+    // Agregar la distribución de calificaciones
+    result.ratingDistribution = {};
+    ratingCounts.forEach(item => {
+      result.ratingDistribution[item._id] = item.count;
+    });
+
+    res.json(result);
   } catch (error) {
+    console.error('Error getting product review stats:', error);
     res.status(500).json({ error: error.message });
   }
 };

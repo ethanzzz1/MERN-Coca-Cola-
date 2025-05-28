@@ -2,7 +2,6 @@
     Campos:
         comment
         rating
-        idClient
 */
 
 import { Schema, model } from "mongoose";
@@ -13,8 +12,8 @@ const reviewsSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      minlength: 10,
-      maxlength: 500
+      minlength: [10, 'El comentario debe tener al menos 10 caracteres'],
+      maxlength: [500, 'El comentario no puede exceder los 500 caracteres']
     },
     rating: {
       type: Number,
@@ -23,15 +22,10 @@ const reviewsSchema = new Schema(
       max: 5,
       set: (v) => Math.round(v)
     },
-    customerId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Customer',
-      required: true
-    },
     productId: {
       type: Schema.Types.ObjectId,
       ref: 'Product',
-      required: true
+      required: false
     },
     status: {
       type: String,
@@ -40,10 +34,10 @@ const reviewsSchema = new Schema(
     },
     title: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
-      minlength: 3,
-      maxlength: 100
+      maxlength: 100,
+      default: 'Reseña'
     },
     helpfulVotes: {
       type: Number,
@@ -60,7 +54,8 @@ const reviewsSchema = new Schema(
     }],
     purchaseDate: {
       type: Date,
-      required: true
+      required: false,
+      default: Date.now
     },
     verifiedPurchase: {
       type: Boolean,
@@ -73,27 +68,14 @@ const reviewsSchema = new Schema(
   }
 );
 
-// Index para búsqueda rápida por producto y cliente
-reviewsSchema.index({ productId: 1, customerId: 1 });
+// Index para búsqueda rápida por producto
+reviewsSchema.index({ productId: 1 });
 
 // Validación personalizada para el rating mínimo
 reviewsSchema.path('rating').validate(function(rating) {
   return rating >= 1;
 }, 'La calificación mínima es 1');
 
-// Validación personalizada para el comentario duplicado
-reviewsSchema.pre('save', async function(next) {
-  const review = this;
-  const existingReview = await reviewsModel.findOne({
-    customerId: review.customerId,
-    productId: review.productId,
-    status: 'approved'
-  });
-  
-  if (existingReview) {
-    next(new Error('Ya existe una reseña aprobada para este producto del cliente'));
-  }
-  next();
-});
+// No validation for duplicates since we removed the customerId requirement
 
 export default model("Review", reviewsSchema);
